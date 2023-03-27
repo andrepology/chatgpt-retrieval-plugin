@@ -1,4 +1,5 @@
 from models.models import (
+    Message,
     Document,
     DocumentChunkWithScore,
     DocumentMetadataFilter,
@@ -7,6 +8,13 @@ from models.models import (
 )
 from pydantic import BaseModel
 from typing import List, Optional
+
+
+class ChatRequest(BaseModel):
+    messages: List[Message]
+
+class ChatResponse(BaseModel):
+    messages: List[Message]
 
 
 class UpsertRequest(BaseModel):

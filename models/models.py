@@ -8,6 +8,18 @@ class Source(str, Enum):
     file = "file"
     chat = "chat"
 
+# role must be user or system as a string
+class Role(str, Enum):
+    user = "user"
+    system = "system"
+    assistant = "assistant"
+
+
+class Message(BaseModel):
+    # role  is Role or user by default
+    role: Role = Role.user
+    content: str
+
 
 class DocumentMetadata(BaseModel):
     source: Optional[Source] = None

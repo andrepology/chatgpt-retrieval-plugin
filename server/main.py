@@ -4,6 +4,8 @@ from fastapi import FastAPI, File, HTTPException, Depends, Body, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 
+from fastapi.middleware.cors import CORSMiddleware
+
 from models.api import (
     DeleteRequest,
     DeleteResponse,
@@ -11,9 +13,15 @@ from models.api import (
     QueryResponse,
     UpsertRequest,
     UpsertResponse,
+    ChatResponse,
+    ChatRequest,
 )
+
+from models.models import Message
+
 from datastore.factory import get_datastore
 from services.file import get_document_from_file
+from services.openai import get_chat_response
 
 from dotenv import load_dotenv
 
@@ -21,6 +29,16 @@ from dotenv import load_dotenv
 load_dotenv()
 app = FastAPI()
 app.mount("/.well-known", StaticFiles(directory=".well-known"), name="static")
+
+# Set up CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Replace with the URL of your React app
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Create a sub-application, in order to access just the query endpoint in an OpenAPI schema, found at http://0.0.0.0:8000/sub/openapi.json when the app is running locally
 sub_app = FastAPI(
@@ -60,6 +78,7 @@ async def upsert_file(
         raise HTTPException(status_code=500, detail=f"str({e})")
 
 
+
 @app.post(
     "/upsert",
     response_model=UpsertResponse,
@@ -74,6 +93,34 @@ async def upsert(
     except Exception as e:
         print("Error:", e)
         raise HTTPException(status_code=500, detail="Internal Service Error")
+
+@app.post(
+    "/chat",
+    response_model=ChatResponse,
+)
+async def chat_main(
+    request: ChatRequest = Body(...),
+    token: HTTPAuthorizationCredentials = Depends(validate_token),
+):
+    try:
+
+        # convert messages to list of dicts
+        messages = [dict(message) for message in request.messages]
+        chat_response = get_chat_response(messages = messages)
+
+        # convert to Message object
+        chat_response = Message(**chat_response)
+
+        # combine with previous messages and send back
+        request.messages.append(chat_response)
+
+        return ChatResponse(messages=request.messages)
+        
+    except Exception as e:
+        print("Error:", e)
+        raise HTTPException(status_code=500, detail="Internal Service Error")
+
+
 
 
 @app.post(
