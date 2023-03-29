@@ -1,7 +1,7 @@
 from typing import List, Dict
 from models.models import Message
 import openai
-
+from time import time
 
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
@@ -85,16 +85,17 @@ def get_chat_response(
     # call the OpenAI chat completion API with the given messages
     
     
+    start = time()
+    
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages,
     )
 
+    print("took", time() - start)
 
     choices = response["choices"]  # type: ignore
     completion = choices[0].message
-
-    print(completion)
 
 
     return completion

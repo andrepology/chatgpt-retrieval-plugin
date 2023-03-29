@@ -1,6 +1,6 @@
-# fly.toml file generated for trails-chat on 2023-03-26T19:33:46+08:00
+# fly.toml file generated for trails-chat-retrieval on 2023-03-28T23:24:29+08:00
 
-app = "trails-chat"
+app = "trails-chat-retrieval"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []

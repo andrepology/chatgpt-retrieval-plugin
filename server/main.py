@@ -1,4 +1,5 @@
 import os
+import time
 import uvicorn
 from fastapi import FastAPI, File, HTTPException, Depends, Body, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -33,7 +34,7 @@ app.mount("/.well-known", StaticFiles(directory=".well-known"), name="static")
 # Set up CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Replace with the URL of your React app
+    allow_origins=["http://localhost:3000", "https://stream-building-ux.vercel.app"],  # Replace with the URL of your React app
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -78,7 +79,6 @@ async def upsert_file(
         raise HTTPException(status_code=500, detail=f"str({e})")
 
 
-
 @app.post(
     "/upsert",
     response_model=UpsertResponse,
@@ -106,15 +106,16 @@ async def chat_main(
 
         # convert messages to list of dicts
         messages = [dict(message) for message in request.messages]
-        chat_response = get_chat_response(messages = messages)
+
+        print(messages)
+
+        chat_response =  get_chat_response(messages = messages)
+        
 
         # convert to Message object
         chat_response = Message(**chat_response)
 
-        # combine with previous messages and send back
-        request.messages.append(chat_response)
-
-        return ChatResponse(messages=request.messages)
+        return ChatResponse(message=chat_response)
         
     except Exception as e:
         print("Error:", e)

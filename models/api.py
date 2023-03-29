@@ -14,7 +14,7 @@ class ChatRequest(BaseModel):
     messages: List[Message]
 
 class ChatResponse(BaseModel):
-    messages: List[Message]
+    message: Message
 
 
 class UpsertRequest(BaseModel):
